@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  seed     = "prisma/seed.ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int         @id @default(autoincrement())
+  email           String      @unique
+  name            String?
+  password        String
+  role            Role        @default(USER)
+  isEmailVerified Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  Token           Token[]
+  Events          UserEvent[]
+}
+
+model Token {
+  id          Int       @id @default(autoincrement())
+  token       String
+  type        TokenType
+  expires     DateTime
+  blacklisted Boolean
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+}
+
+model Event {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  date        DateTime
+  location    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now()) @updatedAt
+  Users       UserEvent[]
+}
+
+model UserEvent {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  User      User     @relation(fields: [userId], references: [id])
+  Event     Event    @relation(fields: [eventId], references: [id])
+  status    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
+  RESET_PASSWORD
+  VERIFY_EMAIL
+}
