@@ -32,7 +32,7 @@ const getEvents = catchAsync(async (req, res) => {
   }
 
   const token = tokenParts[1];
-  const refreshTokenData = await tokenService.verifyToken(token, TokenType.REFRESH);
+  const refreshTokenData = await tokenService.verifyToken(token, TokenType.ACCESS);
   const { userId } = refreshTokenData;
   const filter = pick(req.query, ['title', 'date']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
@@ -73,7 +73,7 @@ const bookEvent = catchAsync(async (req, res) => {
   }
 
   const token = tokenParts[1];
-  const refreshTokenData = await tokenService.verifyToken(token, TokenType.REFRESH);
+  const refreshTokenData = await tokenService.verifyToken(token, TokenType.ACCESS);
   const { userId } = refreshTokenData;
   const event = await eventService.bookEvent(userId, req.params.eventId);
   res.send(event);

@@ -4,6 +4,7 @@ import ApiError from '../utils/ApiError';
 import { roleRights } from '../config/roles';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma/client';
+import { userService } from '../services';
 
 const verifyCallback =
   (
@@ -16,19 +17,27 @@ const verifyCallback =
     if (err || info || !user) {
       return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
     }
-    req.user = user;
 
-    if (requiredRights.length) {
-      const userRights = roleRights.get(user.role) ?? [];
-      const hasRequiredRights = requiredRights.every((requiredRight) =>
-        userRights.includes(requiredRight)
-      );
-      if (!hasRequiredRights && req.params.userId !== user.id) {
-        return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+    try {
+      // Fetch full user details from the database
+      const fullUser = await userService.getUserById(user.id);
+      req.user = fullUser; // Assign full user details including roles to req.user
+
+      if (requiredRights.length && fullUser) {
+        const userRights = roleRights.get(fullUser.role) ?? [];
+        const hasRequiredRights = requiredRights.every((requiredRight) =>
+          userRights.includes(requiredRight)
+        );
+
+        if (!hasRequiredRights && req.params.userId !== fullUser.id) {
+          return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+        }
       }
-    }
 
-    resolve();
+      resolve();
+    } catch (dbError) {
+      return reject(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
+    }
   };
 
 const auth =

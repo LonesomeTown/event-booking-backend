@@ -3,9 +3,9 @@ import Joi from 'joi';
 const createEvent = {
   body: Joi.object().keys({
     name: Joi.string().required(),
-    description: Joi.string(),
+    description: Joi.string().allow('', null),
     date: Joi.date().required(),
-    location: Joi.string()
+    location: Joi.string().allow('', null)
   })
 };
 

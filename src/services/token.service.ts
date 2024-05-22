@@ -11,6 +11,7 @@ import { AuthTokensResponse } from '../types/response';
 /**
  * Generate token
  * @param {number} userId
+ * @param {Role} role
  * @param {Moment} expires
  * @param {string} type
  * @param {string} [secret]
@@ -85,7 +86,7 @@ const verifyToken = async (token: string, type: TokenType): Promise<Token> => {
 const generateAuthTokens = async (user: { id: number }): Promise<AuthTokensResponse> => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const accessToken = generateToken(user.id, accessTokenExpires, TokenType.ACCESS);
-
+  await saveToken(accessToken, user.id, accessTokenExpires, TokenType.ACCESS);
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
   const refreshToken = generateToken(user.id, refreshTokenExpires, TokenType.REFRESH);
   await saveToken(refreshToken, user.id, refreshTokenExpires, TokenType.REFRESH);
