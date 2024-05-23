@@ -20,6 +20,12 @@ cp .env.example .env
 # open .env and modify the environment variables (if needed)
 ```
 
+Set up database data:
+
+```bash
+yarn db:seed
+```
+
 ## Table of Contents
 
 - [Event Booking Backend](#event-booking-backend)
